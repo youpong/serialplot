@@ -62,7 +62,7 @@ func main() {
 
 	scanner := bufio.NewScanner(port)
 
-	// ---- 2. Web サーバ起動 ----
+	// Start web server
 	http.HandleFunc("/ws", wsHandler)
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	go func() {
@@ -70,10 +70,10 @@ func main() {
 		log.Fatal(http.ListenAndServe(":8080", nil))
 	}()
 
-	// ---- 3. シリアル読み取りループ ----
+	// Loop to broadcast values read from the serial port
 	for scanner.Scan() {
 		line := scanner.Text()
-		// label:value の形式確認
+		// Verification format label:value
 		if strings.Contains(line, ":") {
 			broadcast(line)
 			fmt.Println("Recv:", line)
