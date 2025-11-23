@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/websocket"
-	"go.bug.st/serial"
+	"github.com/tarm/serial"
 )
 
 var upgrader = websocket.Upgrader{
@@ -40,11 +40,17 @@ func broadcast(msg string) {
 }
 
 func main() {
+	// Example micro:bit serial port
+	//   Linux:   /dev/ttyACM0"
+	//   macOS:   /dev/tty.usbmodem1101
+	//   Windows: COM3
+	c := &serial.Config{
+		Name: "/dev/tty.usbmodem1101",
+		Baud: 115200, // micro:bit standard baud
+	}
+
 	// ---- 1. シリアルポートを開く ----
-	port, err := serial.Open(
-		"/dev/ttyACM0", // Windows: COM3 等
-		&serial.Mode{BaudRate: 115200},
-	)
+	port, err := serial.OpenPort(c)
 	if err != nil {
 		log.Fatal(err)
 	}
