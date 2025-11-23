@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/websocket"
@@ -40,7 +41,7 @@ func broadcast(msg string) {
 }
 
 func main() {
-	// Example micro:bit serial port
+	// Example micro:bit serial port name
 	//   Linux:   /dev/ttyACM0"
 	//   macOS:   /dev/tty.usbmodem1101
 	//   Windows: COM3
@@ -49,7 +50,10 @@ func main() {
 		Baud: 115200, // micro:bit standard baud
 	}
 
-	// ---- 1. シリアルポートを開く ----
+	if len(os.Args) == 2 {
+		c.Name = os.Args[1]
+	}
+
 	port, err := serial.OpenPort(c)
 	if err != nil {
 		log.Fatal(err)
