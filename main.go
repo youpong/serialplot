@@ -2,11 +2,11 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/gorilla/websocket"
 	"github.com/tarm/serial"
@@ -34,9 +34,12 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func broadcast(msg string) {
+func broadcast(msg []byte) {
 	for conn := range wsConnections {
-		conn.WriteMessage(websocket.TextMessage, []byte(msg))
+		if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+			conn.Close()
+			delete(wsConnections, conn)
+		}
 	}
 }
 
@@ -66,7 +69,7 @@ func main() {
 	http.HandleFunc("/ws", wsHandler)
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	go func() {
-		log.Println("Web server started on :8080")
+		log.Println("Listening on :8080")
 		log.Fatal(http.ListenAndServe(":8080", nil))
 	}()
 
@@ -74,9 +77,18 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		// Verification format label:value
-		if strings.Contains(line, ":") {
-			broadcast(line)
-			fmt.Println("Recv:", line)
+		var accel, gyro, temp int
+		fmt.Sscanf(line, "%d,%d,%d", &accel, &gyro, &temp)
+
+		payload := map[string]interface{}{
+			"values": map[string]int{
+				"accel": accel,
+				"gyro":  gyro,
+				"temp":  temp,
+			},
 		}
+
+		jsonBytes, _ := json.Marshal(payload)
+		broadcast(jsonBytes)
 	}
 }

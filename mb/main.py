@@ -4,6 +4,7 @@ import time
 
 while True:
     x = accelerometer.get_x()
+    y = accelerometer.get_y()
     print("A0:", x)
+    print("A1:", y)
     time.sleep_ms(100)
-#    print("DEBUG:", time.ticks_ms() / 1000.0)
