@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -46,20 +47,24 @@ func broadcast(msg []byte) {
 }
 
 func main() {
-	// Example micro:bit serial port name
-	//   Linux:   /dev/ttyACM0"
-	//   macOS:   /dev/tty.usbmodem1101
-	//   Windows: COM3
-	// TODO: これはファイルの先頭に持っていきたい。
+	var port_name string
+	var mock bool
+	flag.StringVar(&port_name, "port", "/dev/tty.usbmodem1101", "serial port")
+	flag.BoolVar(&mock, "mock", false, "use mock data instead of serial port(develop)")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [options...]\n", os.Args[0])
+		flag.PrintDefaults()
+		fmt.Fprint(os.Stderr, "\nExample serial port name:\n"+
+			"\tLinux:   /dev/ttyACM0\n"+
+			"\tmacOS:   /dev/tty.usbmodem1101\n"+
+			"\tWindows: COM3\n")
+	}
+	flag.Parse()
+
 	c := &serial.Config{
-		Name: "/dev/tty.usbmodem1101",
+		Name: port_name,
 		Baud: 115200, // micro:bit standard baud
 	}
-
-	if len(os.Args) == 2 {
-		c.Name = os.Args[1]
-	}
-
 	port, err := serial.OpenPort(c)
 	if err != nil {
 		log.Fatal(err)
