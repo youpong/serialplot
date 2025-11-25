@@ -17,7 +17,6 @@ const chart = new Chart(ctx, {
         labels: [],
         datasets: [
             { label: 'accel', data: [], borderWidth: 1 },
-            { label: 'gyro',  data: [], borderWidth: 1 },
             { label: 'temp',  data: [], borderWidth: 1 }
         ]
     },
@@ -36,8 +35,7 @@ ws.onmessage = (event) => {
 
     chart.data.labels.push("");
     chart.data.datasets[0].data.push(msg.values.accel);
-    chart.data.datasets[1].data.push(msg.values.gyro);
-    chart.data.datasets[2].data.push(msg.values.temp);
+    chart.data.datasets[1].data.push(msg.values.temp);
 
     // 古いデータを削除（メモリ節約）
     if (chart.data.labels.length > 200) {

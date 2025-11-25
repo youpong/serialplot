@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/tarm/serial"
@@ -46,6 +49,15 @@ func broadcast(msg []byte) {
 	}
 }
 
+type MockReader struct{}
+
+func (m *MockReader) Read(p []byte) (int, error) {
+	s := fmt.Sprintf("%d,%d\n", rand.Intn(1000), rand.Intn(1000))
+	time.Sleep(100 * time.Millisecond)
+	// fmt.Printf("DEBUG: %s", s)
+	return copy(p, s), nil
+}
+
 func main() {
 	var port_name string
 	var mock bool
@@ -61,17 +73,21 @@ func main() {
 	}
 	flag.Parse()
 
-	c := &serial.Config{
-		Name: port_name,
-		Baud: 115200, // micro:bit standard baud
+	var src io.Reader
+	if !mock {
+		c := &serial.Config{
+			Name: port_name,
+			Baud: 115200, // micro:bit standard baud
+		}
+		src, err := serial.OpenPort(c)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer src.Close()
+	} else {
+		src = &MockReader{}
 	}
-	port, err := serial.OpenPort(c)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer port.Close()
-
-	scanner := bufio.NewScanner(port) // TODO: scanner の後始末って必要？
+	scanner := bufio.NewScanner(src) // TODO: scanner の後始末って必要？
 
 	// Start web server
 	http.HandleFunc("/ws", wsHandler)
@@ -86,13 +102,12 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		// Verification format label:value
-		var accel, gyro, temp int
-		fmt.Sscanf(line, "%d,%d,%d", &accel, &gyro, &temp)
-
+		var accel, temp int
+		fmt.Sscanf(line, "%d,%d", &accel, &temp)
+		//		fmt.Printf("DEBUG: %d, %d\n", accel, temp)
 		payload := map[string]interface{}{
 			"values": map[string]int{
 				"accel": accel,
-				"gyro":  gyro,
 				"temp":  temp,
 			},
 		}
