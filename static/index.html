@@ -16,8 +16,8 @@ const chart = new Chart(ctx, {
     data: {
         labels: [],
         datasets: [
-            { label: 'accel', data: [], borderWidth: 1 },
-            { label: 'temp',  data: [], borderWidth: 1 }
+            { label: 'A0', data: [], borderWidth: 1 },
+            { label: 'A1',  data: [], borderWidth: 1 }
         ]
     },
     options: {
@@ -29,13 +29,22 @@ const chart = new Chart(ctx, {
     }
 });
 
+let t = 0;
+
 let ws = new WebSocket("ws://localhost:8080/ws");
 ws.onmessage = (event) => {
     const msg = JSON.parse(event.data);
 
-    chart.data.labels.push("");
-    chart.data.datasets[0].data.push(msg.values.accel);
-    chart.data.datasets[1].data.push(msg.values.temp);
+    const value = Number(msg.value);
+
+    // chart.data.labels.push(t++);
+    if (msg.label == "A0") {
+        chart.data.labels.push(t++);
+        chart.data.datasets[0].data.push(value);
+    }
+    if (msg.label == "A1") {
+        chart.data.datasets[1].data.push(value);
+    }
 
     // 古いデータを削除（メモリ節約）
     if (chart.data.labels.length > 200) {

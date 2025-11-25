@@ -3,7 +3,6 @@ from microbit import *
 import time
 
 while True:
-    x = accelerometer.get_x()
-    y = accelerometer.get_y()
-    print("{},{}".format(x, y))
-    time.sleep_ms(100)
+    print("A0:{}".format(accelerometer.get_x()))
+    print("A1:{}".format(accelerometer.get_y()))
+    time.sleep_ms(200)

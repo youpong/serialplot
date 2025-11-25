@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -52,9 +53,8 @@ func broadcast(msg []byte) {
 type MockReader struct{}
 
 func (m *MockReader) Read(p []byte) (int, error) {
-	s := fmt.Sprintf("%d,%d\n", rand.Intn(1000), rand.Intn(1000))
+	s := fmt.Sprintf("A0:%d\nA1:%d\n", rand.Intn(1000), rand.Intn(1000))
 	time.Sleep(100 * time.Millisecond)
-	// fmt.Printf("DEBUG: %s", s)
 	return copy(p, s), nil
 }
 
@@ -104,15 +104,18 @@ func main() {
 	// Loop to broadcast values read from the serial port
 	for scanner.Scan() {
 		line := scanner.Text()
+
 		// Verification format label:value
-		var accel, temp int
-		fmt.Sscanf(line, "%d,%d", &accel, &temp)
-		//		fmt.Printf("DEBUG: %d, %d\n", accel, temp)
-		payload := map[string]interface{}{
-			"values": map[string]int{
-				"accel": accel,
-				"temp":  temp,
-			},
+		parts := strings.Split(line, ":")
+		if len(parts) != 2 {
+			continue
+		}
+
+		// msg := fmt.Sprintf(`{"label":"%s","value":%s}`, parts[0], parts[1])
+
+		payload := map[string]any{
+			"label": parts[0],
+			"value": parts[1],
 		}
 
 		jsonBytes, _ := json.Marshal(payload)

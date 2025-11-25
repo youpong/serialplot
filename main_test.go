@@ -7,7 +7,7 @@ import (
 )
 
 func TestMockReader(t *testing.T) {
-	re := regexp.MustCompile(`^\d+,\d+$`)
+	re := regexp.MustCompile(`^A[01]:\d+$`)
 
 	m := &MockReader{}
 	s := bufio.NewScanner(m)
@@ -15,7 +15,11 @@ func TestMockReader(t *testing.T) {
 	if !s.Scan() {
 		t.Errorf("")
 	}
+	//	fmt.Printf("DEBUG: %s\n", s.Text())
+	//	fmt.Printf("DEBUG: %s\n", s.Text())
 	if !re.MatchString(s.Text()) {
 		t.Errorf("")
 	}
+	// s.Scan()
+	// fmt.Printf("DEBUG: %s\n", s.Text())
 }
