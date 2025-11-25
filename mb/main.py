@@ -5,5 +5,5 @@ import time
 while True:
     x = accelerometer.get_x()
     y = accelerometer.get_y()
-    print(x, y)
+    print("{},{}".format(x, y))
     time.sleep_ms(100)

@@ -75,6 +75,7 @@ func main() {
 
 	var src io.Reader
 	if !mock {
+		fmt.Printf("DEBUG: port_name(%s)\n", port_name)
 		c := &serial.Config{
 			Name: port_name,
 			Baud: 115200, // micro:bit standard baud
