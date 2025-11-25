@@ -80,11 +80,13 @@ func main() {
 			Name: port_name,
 			Baud: 115200, // micro:bit standard baud
 		}
-		src, err := serial.OpenPort(c)
+		var err error
+		src, err = serial.OpenPort(c)
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer src.Close()
+		// TODO: src.Close() をどこでよぶ？
+		// defer src.Close()
 	} else {
 		src = &MockReader{}
 	}
