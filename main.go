@@ -24,10 +24,12 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "WebSocket upgrade error", http.StatusInternalServerError)
 		return
 	}
+	defer conn.Close() // TODO: conn.Close() を呼び出すタイミングを検討しよう。ここが最適か？
+	// TODO: ここで呼び出す必要があるのか？
 	wsConnections[conn] = true
-	defer conn.Close()
 	for {
 		if _, _, err := conn.NextReader(); err != nil {
+			// TODO: ここで conn.Close() するのでは？
 			delete(wsConnections, conn)
 			return
 		}
@@ -48,6 +50,7 @@ func main() {
 	//   Linux:   /dev/ttyACM0"
 	//   macOS:   /dev/tty.usbmodem1101
 	//   Windows: COM3
+	// TODO: これはファイルの先頭に持っていきたい。
 	c := &serial.Config{
 		Name: "/dev/tty.usbmodem1101",
 		Baud: 115200, // micro:bit standard baud
@@ -63,11 +66,12 @@ func main() {
 	}
 	defer port.Close()
 
-	scanner := bufio.NewScanner(port)
+	scanner := bufio.NewScanner(port) // TODO: scanner の後始末って必要？
 
 	// Start web server
 	http.HandleFunc("/ws", wsHandler)
 	http.Handle("/", http.FileServer(http.Dir("./static")))
+	// TODO: go routine 化する必要ある？
 	go func() {
 		log.Println("Listening on :8080")
 		log.Fatal(http.ListenAndServe(":8080", nil))
