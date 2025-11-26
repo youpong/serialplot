@@ -2,21 +2,41 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Sensor Plot</title>
+    <title>Real-time Sensor Plot</title>
+    <style>
+        canvas {
+            height: 200px !important;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<canvas id="chart"></canvas>
+<canvas id="chartA0"></canvas>
+<canvas id="chartA1"></canvas>
 
 <script>
-const ctx = document.getElementById('chart').getContext('2d');
-
-const chart = new Chart(ctx, {
+const chartA0 = new Chart(document.getElementById('chartA0').getContext('2d'), {
     type: 'line',
     data: {
         labels: [],
         datasets: [
             { label: 'A0', data: [], borderWidth: 1 },
+        ]
+    },
+    options: {
+        animation: false,
+        scales: {
+            x: { title: { display: true, text: 'Time' }},
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+const chartA1 = new Chart(document.getElementById('chartA1').getContext('2d'), {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [
             { label: 'A1',  data: [], borderWidth: 1 }
         ]
     },
@@ -30,35 +50,40 @@ const chart = new Chart(ctx, {
 });
 
 let t = 0;
+let lastA0 = 0;
+let lastA1 = 0;
 
 let ws = new WebSocket("ws://localhost:8080/ws");
 ws.onmessage = (event) => {
     const msg = JSON.parse(event.data);
-
     const value = Number(msg.value);
 
-    chart.data.labels.push(t++);
-    if (msg.label == "A0") {
-    //    chart.data.labels.push(t++);
-        chart.data.datasets[0].data.push(value);
+    let nextA0 = lastA0;
+    let nextA1 = lastA1;
 
-        var last = chart.data.datasets[1].data.at(-1);
-        chart.data.datasets[1].data.push(last);
-    }
-    if (msg.label == "A1") {
-        chart.data.datasets[1].data.push(value);
+    if (msg.label == "A0") 
+        nextA0 = value;
+    if (msg.label == "A1") 
+        nextA1 = value;
+    
+    chartA0.data.labels.push(t++);
+    chartA0.data.datasets[0].data.push(nextA0);
+    chartA1.data.labels.push(t++);
+    chartA1.data.datasets[0].data.push(nextA1);
 
-        var last = chart.data.datasets[0].data.at(-1);
-        chart.data.datasets[0].data.push(last);
-    }
+    lastA0 = nextA0;
+    lastA1 = nextA1;
 
     // 古いデータを削除（メモリ節約）
-    if (chart.data.labels.length > 200) {
-        chart.data.labels.shift();
-        chart.data.datasets.forEach(ds => ds.data.shift());
-    }
+    [chartA0, chartA1].forEach(chart => {
+        if (chart.data.labels.length > 200) {
+            chart.data.labels.shift();
+            chart.data.datasets[0].data.shift();
+        }
+    });
 
-    chart.update();
+    chartA0.update();
+    chartA1.update();
 };
 </script>
 </body>
