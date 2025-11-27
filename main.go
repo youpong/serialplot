@@ -17,9 +17,7 @@ import (
 	"github.com/tarm/serial"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool { return true }, // TODO: いるの？
-}
+var upgrader = websocket.Upgrader{}
 
 var wsConnections = make(map[*websocket.Conn]bool)
 
