@@ -75,22 +75,20 @@ func main() {
 
 	var src io.Reader
 	if !mock {
-		fmt.Printf("DEBUG: port_name(%s)\n", port_name)
 		c := &serial.Config{
 			Name: port_name,
 			Baud: 115200, // micro:bit standard baud
 		}
-		var err error
-		src, err = serial.OpenPort(c)
+		port, err := serial.OpenPort(c)
 		if err != nil {
 			log.Fatal(err)
 		}
-		// TODO: src.Close() をどこでよぶ？
-		// defer src.Close()
+		defer port.Close()
+		src = port
 	} else {
 		src = &MockReader{}
 	}
-	scanner := bufio.NewScanner(src) // TODO: scanner の後始末って必要？
+	scanner := bufio.NewScanner(src)
 
 	// Start web server
 	http.HandleFunc("/ws", wsHandler)
@@ -110,8 +108,6 @@ func main() {
 		if len(parts) != 2 {
 			continue
 		}
-
-		// msg := fmt.Sprintf(`{"label":"%s","value":%s}`, parts[0], parts[1])
 
 		payload := map[string]any{
 			"label": parts[0],
