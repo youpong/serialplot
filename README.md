@@ -3,6 +3,7 @@ This sample project illustrates real-time graphing in a browser of values read
 from the BBC micro:bit's serial port.
 It represents the minimal setup required for visualising sensor values and
 similar data in real time.
+![sample screen](./screen.png)
 
 ## Data flow
 ```
