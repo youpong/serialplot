@@ -13,6 +13,7 @@
 <body>
 <canvas id="chartA0"></canvas>
 <canvas id="chartA1"></canvas>
+<canvas id="chartA2"></canvas>
 
 <script>
 const chartA0 = new Chart(document.getElementById('chartA0').getContext('2d'), {
@@ -49,9 +50,27 @@ const chartA1 = new Chart(document.getElementById('chartA1').getContext('2d'), {
     }
 });
 
+const chartA2 = new Chart(document.getElementById('chartA2').getContext('2d'), {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [
+            { label: 'A2',  data: [], borderWidth: 1 }
+        ]
+    },
+    options: {
+        animation: false,
+        scales: {
+            x: { title: { display: true, text: 'Time' }},
+            y: { beginAtZero: true }
+        }
+    }
+});
+
 let t = 0;
 let lastA0 = 0;
 let lastA1 = 0;
+let lastA2 = 0;
 
 let ws = new WebSocket("ws://localhost:8080/ws");
 ws.onmessage = (event) => {
@@ -60,19 +79,26 @@ ws.onmessage = (event) => {
 
     let nextA0 = lastA0;
     let nextA1 = lastA1;
+    let nextA2 = lastA2;
 
     if (msg.label == "A0") 
         nextA0 = value;
     if (msg.label == "A1") 
         nextA1 = value;
+    if (msg.label == "A2") 
+        nextA2 = value;
     
-    chartA0.data.labels.push(t++);
+    chartA0.data.labels.push(t);
     chartA0.data.datasets[0].data.push(nextA0);
-    chartA1.data.labels.push(t++);
+    chartA1.data.labels.push(t);
     chartA1.data.datasets[0].data.push(nextA1);
+    chartA2.data.labels.push(t);
+    chartA2.data.datasets[0].data.push(nextA2);
 
+    t++;
     lastA0 = nextA0;
     lastA1 = nextA1;
+    lastA2 = nextA2;
 
     // 古いデータを削除（メモリ節約）
     [chartA0, chartA1].forEach(chart => {
@@ -84,6 +110,7 @@ ws.onmessage = (event) => {
 
     chartA0.update();
     chartA1.update();
+    chartA2.update();
 };
 </script>
 </body>

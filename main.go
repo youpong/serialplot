@@ -49,7 +49,7 @@ func broadcast(msg []byte) {
 type MockReader struct{}
 
 func (m *MockReader) Read(p []byte) (int, error) {
-	s := fmt.Sprintf("A%d:%d\n", rand.Intn(2), rand.Intn(1000))
+	s := fmt.Sprintf("A%d:%d\n", rand.Intn(3), rand.Intn(1000))
 	time.Sleep(100 * time.Millisecond)
 	return copy(p, s), nil
 }
@@ -89,8 +89,10 @@ func main() {
 	// Start web server
 	http.HandleFunc("/ws", wsHandler)
 	http.Handle("/", http.FileServer(http.Dir("./static")))
-	log.Println("Listening on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	go func() {
+		log.Println("Listening on :8080")
+		log.Fatal(http.ListenAndServe(":8080", nil))
+	}()
 
 	// Loop to broadcast values read from the serial port
 	for scanner.Scan() {
