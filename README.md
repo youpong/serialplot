@@ -18,7 +18,7 @@ micro:bit - (USB cable) -> PC
 
 ### mb/main.py (MicroPython / BBC micro:bit)
 - Acquires sensor values on the micro:bit
-- **Outputs to USB Serial** as text in the format `A0:number`
+- **Outputs to USB Serial** as text in the format `label:number`
 - `print()` output reaches the PC's serial port
 
 ### main.go(Go / PC)
