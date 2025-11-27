@@ -91,11 +91,8 @@ func main() {
 	// Start web server
 	http.HandleFunc("/ws", wsHandler)
 	http.Handle("/", http.FileServer(http.Dir("./static")))
-	// TODO: go routine 化する必要ある？
-	go func() {
-		log.Println("Listening on :8080")
-		log.Fatal(http.ListenAndServe(":8080", nil))
-	}()
+	log.Println("Listening on :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 
 	// Loop to broadcast values read from the serial port
 	for scanner.Scan() {
