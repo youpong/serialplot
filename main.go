@@ -29,12 +29,10 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "WebSocket upgrade error", http.StatusInternalServerError)
 		return
 	}
-	defer conn.Close() // TODO: conn.Close() を呼び出すタイミングを検討しよう。ここが最適か？
-	// TODO: ここで呼び出す必要があるのか？
+	defer conn.Close()
 	wsConnections[conn] = true
 	for {
 		if _, _, err := conn.NextReader(); err != nil {
-			// TODO: ここで conn.Close() するのでは？
 			delete(wsConnections, conn)
 			return
 		}
